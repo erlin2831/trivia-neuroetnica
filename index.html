@@ -242,16 +242,15 @@
             ]
         };
 
-       // Configuración real vinculada a tu proyecto de Firebase
-    const firebaseConfig = {
-        apiKey: "AIzaSyBhO4qxym0Wh5uxngU2riWgKOInUdMqU8c",
-        authDomain: "trivia-neuroetnica.firebaseapp.com",
-        projectId: "trivia-neuroetnica",
-        storageBucket: "trivia-neuroetnica.firebasestorage.app",
-        messagingSenderId: "72095778978",
-        appId: "1:72095778978:web:2851bec2a216751aceaffb",
-        measurementId: "G-RQDXVNFHEW"
-    };
+        // Configuración real vinculada a tu proyecto de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBhO4qxym0Wh5uxngU2riWgKOInUdMqU8c",
+            authDomain: "trivia-neuroetnica.firebaseapp.com",
+            projectId: "trivia-neuroetnica",
+            storageBucket: "trivia-neuroetnica.firebasestorage.app",
+            messagingSenderId: "72095778978",
+            appId: "1:72095778978:web:2851bec2a216751aceaffb",
+            measurementId: "G-RQDXVNFHEW"
         };
 
         let db = null;
@@ -282,35 +281,36 @@
          * INICIALIZACIÓN DE SALAS Y CONEXIÓN CON FIREBASE
          * ------------------------------------------------------------- */
         function initFirebase() {
-            if (window.FB && firebaseConfig.apiKey !== "TU_API_KEY") {
-                const app = window.FB.initializeApp(firebaseConfig);
-                db = window.FB.getFirestore(app);
+            if (window.FB && !db) {
+                try {
+                    const app = window.FB.initializeApp(firebaseConfig);
+                    db = window.FB.getFirestore(app);
+                } catch (e) {
+                    console.log("Firebase ya estaba inicializado o falló conexión:", e);
+                }
             }
         }
 
-                /* -------------------------------------------------------------
-         * FUNCIÓN ACTUALIZADA: CREACIÓN SEGURA DE SALA Y QR
+        /* -------------------------------------------------------------
+         * CREACIÓN DE SALA Y CÓDIGO QR
          * ------------------------------------------------------------- */
         async function setupHostRoom() {
             try {
+                initFirebase();
                 isHost = true;
-                // 1. Generar código aleatorio de sala (4 dígitos)
                 currentRoomId = Math.floor(1000 + Math.random() * 9000).toString();
                 gameState.questions = generateMatchQuestions();
-        
-                // 2. Cambiar inmediatamente las vistas para mostrar la pantalla de la sala
+
                 document.getElementById('roleSelectionView').classList.add('hidden');
                 document.getElementById('hostLobbyView').classList.remove('hidden');
                 document.getElementById('lobbyRoomCode').textContent = currentRoomId;
-        
-                // 3. Generar la URL para que las tablets se unan mediante el QR
+
                 const currentUrl = window.location.href.split('?')[0];
                 const joinUrl = `${currentUrl}?room=${currentRoomId}`;
-                
-                // 4. Limpiar el contenedor e intentar generar el Código QR
+
                 const qrContainer = document.getElementById('qrcode');
                 qrContainer.innerHTML = "";
-        
+
                 if (typeof QRCode !== 'undefined') {
                     new QRCode(qrContainer, {
                         text: joinUrl,
@@ -318,23 +318,19 @@
                         height: 180
                     });
                 } else {
-                    // Mensaje alternativo si la librería QR no terminó de cargar
-                    qrContainer.innerHTML = `<p class="text-xs text-red-500 font-bold p-2">Usa el código manual: ${currentRoomId}</p>`;
+                    qrContainer.innerHTML = `<p class="text-xs text-red-500 font-bold p-2">Código manual: ${currentRoomId}</p>`;
                 }
-        
-                // 5. Intentar guardar y escuchar en Firebase de forma segura
+
                 if (db && window.FB) {
                     roomRef = window.FB.doc(db, "rooms", currentRoomId);
                     await window.FB.setDoc(roomRef, gameState);
                     listenToRoomUpdates();
                 } else {
-                    // Si Firebase aún no se ha configurado, mostramos el lobby localmente
                     renderHostLobby();
                 }
-        
-                // 6. Actualizar iconos vectoriales
+
                 if (window.lucide) lucide.createIcons();
-        
+
             } catch (error) {
                 console.error("Error al crear la sala:", error);
                 alert("Ocurrió un inconveniente al crear la sala. Revisa la consola para más detalles.");
@@ -342,6 +338,7 @@
         }
 
         async function joinAsPlayer() {
+            initFirebase();
             const name = document.getElementById('inputPlayerName').value.trim();
             const roomCode = document.getElementById('inputRoomCode').value.trim();
 
@@ -427,7 +424,6 @@
                 </span>
             `).join('');
 
-            // Activar botón solo entre 2 y 5 jugadores
             btnStart.disabled = !(players.length >= 2 && players.length <= 5);
         }
 
@@ -452,12 +448,11 @@
             document.getElementById('questionCounter').textContent = `Pregunta ${gameState.questionIndex + 1} de ${gameState.questions.length}`;
             document.getElementById('hostQuestionText').textContent = currentQ.q;
 
-            // Renderizar carriles del ascensor dinámicamente según la cantidad de jugadores
             const shaft = document.getElementById('elevatorShaft');
             shaft.innerHTML = '';
 
             Object.entries(gameState.players || {}).forEach(([id, p]) => {
-                const maxPts = 2250; // 9 preguntas * 250 max
+                const maxPts = 2250;
                 const pct = Math.min(100, (p.score / maxPts) * 100);
 
                 const lane = document.createElement('div');
@@ -472,7 +467,6 @@
                 shaft.appendChild(lane);
             });
 
-            // Opciones y retroalimentación
             const grid = document.getElementById('hostOptionsGrid');
             grid.innerHTML = '';
             currentQ.opts.forEach((opt, idx) => {
@@ -493,9 +487,6 @@
             }
         }
 
-        /* -------------------------------------------------------------
-         * REGISTRO DE RESPUESTAS Y CÁLCULO DE VELOCIDAD
-         * ------------------------------------------------------------- */
         async function submitPlayerAnswer(optIdx) {
             if (!myPlayerId || !gameState.players[myPlayerId]) return;
 
@@ -516,7 +507,6 @@
             gameState.isRevealed = true;
             const currentQ = gameState.questions[gameState.questionIndex];
 
-            // Determinar cuál jugador correcto respondió más rápido
             let fastestPlayerId = null;
             let minTime = Infinity;
 
@@ -527,11 +517,10 @@
                 }
             });
 
-            // Asignación de puntos: 200 base por acierto + 50 extra al más rápido
             Object.entries(gameState.players).forEach(([id, p]) => {
                 if (p.currentAnswer === currentQ.correct) {
                     let earned = 200;
-                    if (id === fastestPlayerId) earned += 50; // Total 250
+                    if (id === fastestPlayerId) earned += 50;
                     p.score += earned;
                 }
             });
@@ -552,7 +541,6 @@
                 gameState.isRevealed = false;
                 gameState.questionStartTime = Date.now();
 
-                // Limpiar respuestas anteriores
                 Object.values(gameState.players).forEach(p => {
                     p.currentAnswer = null;
                     p.answerTime = null;
@@ -590,7 +578,6 @@
             });
         }
 
-        // Detectar si la tablet ingresó escaneando el QR con parámetro de URL
         window.onload = function() {
             initFirebase();
             const urlParams = new URLSearchParams(window.location.search);
