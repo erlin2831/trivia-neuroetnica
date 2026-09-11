@@ -169,55 +169,62 @@
                     </div>
                 </div>
 
-                <!-- Host Controls -->
+                <!-- Host Controls - Botón Único Dinámico -->
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-wrap gap-3 justify-between items-center">
                     <span id="hostGameStateText" class="text-xs text-slate-400 font-medium">Esperando respuestas de los participantes...</span>
-                    <div class="flex items-center gap-2">
-                        <button id="btnReveal" onclick="revealAnswer()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold px-5 py-2.5 rounded-xl shadow-lg transition-all text-sm">
-                            Revelar Respuesta
-                        </button>
-                        <button id="btnNext" onclick="nextQuestion()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold px-5 py-2.5 rounded-xl shadow-lg transition-all text-sm">
-                            Siguiente Pregunta
-                        </button>
-                    </div>
+                    
+                    <button id="btnHostMainAction" onclick="handleHostMainAction()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold px-6 py-3 rounded-xl shadow-lg transition-all text-sm flex items-center gap-2">
+                        <i data-lucide="eye" class="w-4 h-4"></i>
+                        <span id="btnHostActionText">Revelar Respuesta</span>
+                    </button>
                 </div>
             </div>
         </section>
 
         <!-- PLAYER TABLET VIEW -->
         <section id="playerView" class="hidden flex-1 flex-col max-w-2xl mx-auto w-full">
-            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-4 mb-4 flex justify-between items-center shadow-lg">
-                <div>
-                    <h2 id="playerNameTitle" class="font-extrabold text-lg text-slate-100">Jugador</h2>
-                    <span id="playerPhaseSub" class="text-xs text-amber-400 font-bold">Fase 1</span>
+            <div id="playerLobbyWaiting" class="bg-slate-900 border border-slate-800 rounded-3xl p-8 text-center my-auto shadow-2xl">
+                <div class="w-16 h-16 bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded-2xl flex items-center justify-center mx-auto mb-4 pulse-glow">
+                    <i data-lucide="hourglass" class="w-8 h-8"></i>
                 </div>
-                <div class="text-right">
-                    <span class="text-xs text-slate-400 font-bold uppercase block">Tu Puntaje</span>
-                    <span id="playerScoreDisplay" class="text-2xl font-black text-amber-400">0</span>
-                </div>
+                <h3 class="text-xl font-black text-slate-100 mb-2">¡Estás Conectado a la Sala!</h3>
+                <p class="text-xs text-slate-400 max-w-xs mx-auto">Esperando que el Anfitrión inicie la partida en la pantalla principal para mostrar la primera pregunta...</p>
             </div>
 
-            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl flex-1 flex flex-col justify-between relative overflow-hidden">
-                <div>
-                    <span id="playerQuestionNum" class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">Pregunta en Pantalla</span>
-                    <h3 id="playerQuestionText" class="text-lg md:text-xl font-bold text-slate-100 leading-snug">Esperando inicio de pregunta...</h3>
-                </div>
-
-                <div id="playerOptionsGrid" class="grid grid-cols-1 gap-3 my-6">
-                    <!-- Dynamic Option Buttons -->
-                </div>
-
-                <div id="playerSubmittedOverlay" class="hidden absolute inset-0 bg-slate-950/95 backdrop-blur-md flex flex-col items-center justify-center text-center p-6 z-20">
-                    <div class="w-16 h-16 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 rounded-full flex items-center justify-center mb-4 pulse-glow">
-                        <i data-lucide="check-circle-2" class="w-10 h-10"></i>
+            <div id="playerGameContent" class="hidden flex-1 flex-col">
+                <div class="bg-slate-900 border border-slate-800 rounded-3xl p-4 mb-4 flex justify-between items-center shadow-lg">
+                    <div>
+                        <h2 id="playerNameTitle" class="font-extrabold text-lg text-slate-100">Jugador</h2>
+                        <span id="playerPhaseSub" class="text-xs text-amber-400 font-bold">Fase 1</span>
                     </div>
-                    <h3 class="text-2xl font-black text-slate-100 mb-1">¡Respuesta Registrada!</h3>
-                    <p class="text-sm text-slate-400 max-w-xs">Observa la pantalla principal para conocer los resultados y puntos por velocidad.</p>
+                    <div class="text-right">
+                        <span class="text-xs text-slate-400 font-bold uppercase block">Tu Puntaje</span>
+                        <span id="playerScoreDisplay" class="text-2xl font-black text-amber-400">0</span>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl flex-1 flex flex-col justify-between relative overflow-hidden">
+                    <div>
+                        <span id="playerQuestionNum" class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">Pregunta en Pantalla</span>
+                        <h3 id="playerQuestionText" class="text-lg md:text-xl font-bold text-slate-100 leading-snug">Cargando...</h3>
+                    </div>
+
+                    <div id="playerOptionsGrid" class="grid grid-cols-1 gap-3 my-6">
+                        <!-- Dynamic Option Buttons -->
+                    </div>
+
+                    <div id="playerSubmittedOverlay" class="hidden absolute inset-0 bg-slate-950/95 backdrop-blur-md flex flex-col items-center justify-center text-center p-6 z-20">
+                        <div class="w-16 h-16 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 rounded-full flex items-center justify-center mb-4 pulse-glow">
+                            <i data-lucide="check-circle-2" class="w-10 h-10"></i>
+                        </div>
+                        <h3 class="text-2xl font-black text-slate-100 mb-1">¡Respuesta Registrada!</h3>
+                        <p class="text-sm text-slate-400 max-w-xs">Observa la pantalla principal para conocer los resultados y puntos por velocidad.</p>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- VICTORY / END OF GAME VIEW (SHARED BY TV AND TABLETS) -->
+        <!-- VICTORY / END OF GAME VIEW -->
         <section id="victoryView" class="hidden flex-1 flex flex-col items-center justify-center text-center p-4">
             <div class="bg-slate-900 border border-amber-500/40 rounded-3xl p-8 max-w-xl w-full shadow-2xl relative overflow-hidden">
                 
@@ -440,7 +447,16 @@
                 }
             } else {
                 document.getElementById('playerView').classList.remove('hidden');
-                renderPlayerBoard();
+                
+                // Mostrar vista de espera o vista de preguntas según el estado de la sala
+                if (gameState.status === "LOBBY") {
+                    document.getElementById('playerLobbyWaiting').classList.remove('hidden');
+                    document.getElementById('playerGameContent').classList.add('hidden');
+                } else {
+                    document.getElementById('playerLobbyWaiting').classList.add('hidden');
+                    document.getElementById('playerGameContent').classList.remove('hidden');
+                    renderPlayerBoard();
+                }
             }
             if (window.lucide) lucide.createIcons();
         }
@@ -505,16 +521,30 @@
                 grid.innerHTML += `<div class="p-4 rounded-2xl border text-sm ${style}">${String.fromCharCode(65 + idx)}. ${opt}</div>`;
             });
 
-            const btnNext = document.getElementById('btnNext');
-            if (gameState.questionIndex === gameState.questions.length - 1 && gameState.isRevealed) {
-                btnNext.textContent = "Ver Resultados Finales";
+            // Actualizar estado visual del Botón Único Dinámico
+            const btnAction = document.getElementById('btnHostMainAction');
+            const btnText = document.getElementById('btnHostActionText');
+
+            if (gameState.isRevealed) {
+                btnAction.className = "bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold px-6 py-3 rounded-xl shadow-lg transition-all text-sm flex items-center gap-2 active:scale-95";
+                btnText.textContent = (gameState.questionIndex === gameState.questions.length - 1) ? "Ver Resultados Finales" : "Siguiente Pregunta";
             } else {
-                btnNext.textContent = "Siguiente Pregunta";
+                btnAction.className = "bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold px-6 py-3 rounded-xl shadow-lg transition-all text-sm flex items-center gap-2 active:scale-95";
+                btnText.textContent = "Revelar Respuesta";
             }
 
             document.getElementById('explanationBox').classList.toggle('hidden', !gameState.isRevealed);
             if (gameState.isRevealed) {
                 document.getElementById('explanationText').textContent = currentQ.exp;
+            }
+        }
+
+        // Manejador central del Botón Único del Anfitrión
+        async function handleHostMainAction() {
+            if (!gameState.isRevealed) {
+                await revealAnswer();
+            } else {
+                await nextQuestion();
             }
         }
 
@@ -575,9 +605,38 @@
                 if (db) await window.FB.updateDoc(roomRef, gameState);
                 else renderApp();
             } else {
-                gameState.status = "FINISHED";
-                if (db) await window.FB.updateDoc(roomRef, { status: "FINISHED" });
-                else renderApp();
+                // Comprobar si existe un empate en el 1er lugar antes de finalizar
+                const sorted = Object.values(gameState.players || {}).sort((a, b) => b.score - a.score);
+                const hasTie = sorted.length >= 2 && sorted[0].score > 0 && sorted[0].score === sorted[1].score;
+
+                if (hasTie) {
+                    alert("¡Empate detectado en el primer lugar! Se agregará una pregunta extra de desempate.");
+                    
+                    // Añadir una pregunta aleatoria extra de la Fase 3
+                    const tieBreakerQ = QUESTION_POOL.phase3[Math.floor(Math.random() * QUESTION_POOL.phase3.length)];
+                    gameState.questions.push({
+                        ...tieBreakerQ,
+                        phaseTitle: "Pregunta de Desempate (Muerte Súbita)"
+                    });
+
+                    gameState.questionIndex++;
+                    gameState.isRevealed = false;
+                    gameState.questionStartTime = Date.now();
+
+                    Object.values(gameState.players).forEach(p => {
+                        p.currentAnswer = null;
+                        p.answerTime = null;
+                    });
+
+                    if (db) await window.FB.updateDoc(roomRef, gameState);
+                    else renderApp();
+
+                } else {
+                    // Finalizar juego si no hay empate
+                    gameState.status = "FINISHED";
+                    if (db) await window.FB.updateDoc(roomRef, { status: "FINISHED" });
+                    else renderApp();
+                }
             }
         }
 
@@ -596,7 +655,7 @@
             currentQ.opts.forEach((opt, idx) => {
                 const btn = document.createElement('button');
                 btn.onclick = () => submitPlayerAnswer(idx);
-                btn.className = "w-full p-4 rounded-2xl border border-slate-700 bg-slate-800 text-left font-bold text-slate-100 mb-2";
+                btn.className = "w-full p-4 rounded-2xl border border-slate-700 bg-slate-800 text-left font-bold text-slate-100 mb-2 hover:border-amber-500 transition-all";
                 btn.textContent = `${String.fromCharCode(65 + idx)}. ${opt}`;
                 grid.appendChild(btn);
             });
@@ -634,21 +693,17 @@
                 document.getElementById('playerVictoryMessage').classList.remove('hidden');
             }
 
-            // Disparar animación de confeti automática
             launchConfetti();
         }
 
-        // Función para disparar ráfagas de confeti y estrellas
         function launchConfetti() {
             if (typeof confetti !== 'undefined') {
-                // Ráfaga 1: Izquierda
                 confetti({
                     particleCount: 80,
                     spread: 70,
                     origin: { y: 0.6, x: 0.2 },
                     colors: ['#f59e0b', '#d97706', '#10b981', '#6366f1']
                 });
-                // Ráfaga 2: Derecha
                 confetti({
                     particleCount: 80,
                     spread: 70,
