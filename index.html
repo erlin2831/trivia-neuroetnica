@@ -64,7 +64,6 @@
             <p class="text-slate-400 max-w-md mb-8 text-sm">Selecciona cómo deseas ingresar a la partida:</p>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-xl w-full">
-                <!-- Host Option -->
                 <button id="btnOptionHost" onclick="setupHostRoom()" class="bg-slate-900 border-2 border-slate-800 hover:border-amber-500 p-6 rounded-3xl transition-all flex flex-col items-center text-center group">
                     <div class="w-16 h-16 bg-amber-500/10 text-amber-400 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                         <i data-lucide="tv" class="w-8 h-8"></i>
@@ -73,7 +72,6 @@
                     <p class="text-xs text-slate-400">Muestra el código QR, gestiona el ascensor y proyecta las preguntas.</p>
                 </button>
 
-                <!-- Player Option -->
                 <div id="cardOptionPlayer" class="bg-slate-900 border-2 border-slate-800 p-6 rounded-3xl flex flex-col items-center text-center">
                     <div class="w-16 h-16 bg-indigo-500/10 text-indigo-400 rounded-2xl flex items-center justify-center mb-4">
                         <i data-lucide="tablet" class="w-8 h-8"></i>
@@ -98,19 +96,15 @@
                 <h2 class="text-2xl font-black text-slate-100 mb-2">Escanea el Código QR para Jugar</h2>
                 <p class="text-xs text-slate-400 mb-6">Usa la cámara de tu tablet para unirte a la sesión</p>
 
-                <!-- QR Container -->
                 <div id="qrcode" class="p-4 bg-white rounded-2xl shadow-xl mb-6"></div>
 
                 <div class="text-sm font-bold text-slate-300 mb-4">
                     Código de Sala: <span id="lobbyRoomCode" class="text-amber-400 font-extrabold text-lg"></span>
                 </div>
 
-                <!-- Joined Players Container -->
                 <div class="w-full mb-6">
                     <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Jugadores Conectados (<span id="connectedCount">0</span>/5)</h4>
-                    <div id="playersListContainer" class="flex flex-wrap justify-center gap-2">
-                        <!-- Dynamic Player Chips -->
-                    </div>
+                    <div id="playersListContainer" class="flex flex-wrap justify-center gap-2"></div>
                 </div>
 
                 <button id="btnStartMatch" onclick="startMatch()" disabled class="w-full bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-black py-3.5 rounded-2xl shadow-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed text-sm">
@@ -121,7 +115,6 @@
 
         <!-- HOST MAIN BOARD VIEW (TV / ASCENSOR) -->
         <section id="hostView" class="hidden flex-1 flex flex-col lg:flex-row gap-6">
-            <!-- Left: Elevator Shaft -->
             <div class="lg:w-1/3 bg-slate-900 border border-slate-800 rounded-3xl p-5 flex flex-col shadow-2xl relative overflow-hidden">
                 <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-800">
                     <div class="flex items-center gap-2">
@@ -133,13 +126,9 @@
                     </span>
                 </div>
 
-                <!-- Vertical Shaft Container -->
-                <div id="elevatorShaft" class="flex-1 min-h-[380px] elevator-shaft rounded-2xl relative border border-slate-800 p-3 flex justify-around items-stretch">
-                    <!-- Dynamic Lanes for Players -->
-                </div>
+                <div id="elevatorShaft" class="flex-1 min-h-[380px] elevator-shaft rounded-2xl relative border border-slate-800 p-3 flex justify-around items-stretch"></div>
             </div>
 
-            <!-- Right: Questions and Controls -->
             <div class="lg:w-2/3 flex flex-col gap-4">
                 <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl flex flex-col justify-between relative overflow-hidden flex-1">
                     <div>
@@ -148,7 +137,6 @@
                                 Fase 1
                             </span>
                             <div class="flex items-center gap-3">
-                                <!-- Temporizador del Anfitrión -->
                                 <div class="flex items-center gap-1.5 bg-slate-800 border border-amber-500/30 px-3 py-1 rounded-full text-xs font-extrabold text-amber-400">
                                     <i data-lucide="clock" class="w-3.5 h-3.5"></i>
                                     <span id="hostTimerDisplay">20s</span>
@@ -161,12 +149,9 @@
                             Cargando pregunta...
                         </h2>
 
-                        <div id="hostOptionsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
-                            <!-- Dynamic Options -->
-                        </div>
+                        <div id="hostOptionsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4"></div>
                     </div>
 
-                    <!-- Feedback Box -->
                     <div id="explanationBox" class="hidden mt-5 bg-gradient-to-r from-emerald-950/80 to-slate-900 border border-emerald-500/40 rounded-2xl p-4 text-emerald-200 text-sm shadow-xl">
                         <div class="flex items-center gap-2 font-bold text-emerald-400 mb-1">
                             <i data-lucide="sparkles" class="w-5 h-5"></i>
@@ -176,9 +161,8 @@
                     </div>
                 </div>
 
-                <!-- Host Controls - Botón Condicional -->
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-wrap gap-3 justify-between items-center">
-                    <span id="hostGameStateText" class="text-xs text-slate-400 font-medium">Esperando que todos respondan o agoten los 20s...</span>
+                    <span id="hostGameStateText" class="text-xs text-slate-400 font-medium">Esperando respuestas...</span>
                     
                     <button id="btnHostMainAction" onclick="handleHostMainAction()" disabled class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold px-6 py-3 rounded-xl shadow-lg transition-all text-sm flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
                         <i data-lucide="eye" class="w-4 h-4"></i>
@@ -205,7 +189,6 @@
                         <span id="playerPhaseSub" class="text-xs text-amber-400 font-bold">Fase 1</span>
                     </div>
                     <div class="flex items-center gap-4">
-                        <!-- Temporizador en la Tablet -->
                         <div class="flex items-center gap-1.5 bg-slate-800 border border-amber-500/30 px-3 py-1.5 rounded-xl text-xs font-black text-amber-400">
                             <i data-lucide="clock" class="w-4 h-4"></i>
                             <span id="playerTimerDisplay">20s</span>
@@ -223,14 +206,12 @@
                         <h3 id="playerQuestionText" class="text-lg md:text-xl font-bold text-slate-100 leading-snug">Cargando...</h3>
                     </div>
 
-                    <div id="playerOptionsGrid" class="grid grid-cols-1 gap-3 my-6">
-                        <!-- Dynamic Option Buttons -->
-                    </div>
+                    <div id="playerOptionsGrid" class="grid grid-cols-1 gap-3 my-6"></div>
 
-                    <!-- Overlay de Respuesta Registrada / Tiempo Agotado -->
+                    <!-- Overlay de Estado de Respuesta (Enviada / Correcta / Incorrecta) -->
                     <div id="playerSubmittedOverlay" class="hidden absolute inset-0 bg-slate-950/95 backdrop-blur-md flex flex-col items-center justify-center text-center p-6 z-20">
                         <div id="overlayIconContainer" class="w-16 h-16 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 rounded-full flex items-center justify-center mb-4 pulse-glow">
-                            <i data-lucide="check-circle-2" class="w-10 h-10"></i>
+                            <i id="overlayIcon" data-lucide="check-circle-2" class="w-10 h-10"></i>
                         </div>
                         <h3 id="overlayTitle" class="text-2xl font-black text-slate-100 mb-1">¡Respuesta Registrada!</h3>
                         <p id="overlaySub" class="text-sm text-slate-400 max-w-xs">Observa la pantalla principal para conocer los resultados y puntos por velocidad.</p>
@@ -239,7 +220,7 @@
             </div>
         </section>
 
-        <!-- VICTORY / END OF GAME VIEW -->
+        <!-- VICTORY VIEW -->
         <section id="victoryView" class="hidden flex-1 flex flex-col items-center justify-center text-center p-4">
             <div class="bg-slate-900 border border-amber-500/40 rounded-3xl p-8 max-w-xl w-full shadow-2xl relative overflow-hidden">
                 <div onclick="launchConfetti()" title="¡Haz clic sobre el trofeo para lanzar destellos!" class="w-28 h-28 bg-gradient-to-tr from-amber-400 via-orange-500 to-amber-300 text-slate-950 border-4 border-amber-200 rounded-full flex items-center justify-center mx-auto mb-4 pulse-glow shadow-2xl cursor-pointer hover:scale-110 active:scale-95 transition-all">
@@ -255,9 +236,7 @@
                 </h2>
                 <p id="winnerSubtitle" class="text-xs text-slate-300 font-semibold mb-6">Acreditado con el Máximo Reconocimiento Étnico e Inclusivo</p>
 
-                <div id="finalLeaderboard" class="space-y-3 mb-8 text-left">
-                    <!-- Dynamic Final Scores -->
-                </div>
+                <div id="finalLeaderboard" class="space-y-3 mb-8 text-left"></div>
 
                 <div id="hostVictoryControls" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <button onclick="restartMatch()" class="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-slate-950 font-extrabold py-3.5 rounded-2xl shadow-xl transition-all active:scale-95 text-xs flex items-center justify-center gap-2">
@@ -280,21 +259,25 @@
 
     <script>
         /* -------------------------------------------------------------
-         * BANCO DE PREGUNTAS (45 PREGUNTAS EN TOTAL)
+         * BANCO DE PREGUNTAS AMPLIADO Y CORREGIDO POR FASES
          * ------------------------------------------------------------- */
         const QUESTION_POOL = {
             phase1: [
                 { phase: 1, phaseTitle: "Fase 1: Salud Mental y Neurodiversidad", q: "¿En todas las culturas el aislamiento o retiro temporal se considera un síntoma negativo de enfermedad mental?", opts: ["Verdadero", "Falso"], correct: 1, exp: "En diversas comunidades tradicionales, el retiro temporal es una práctica de sanación o recarga sensorial." },
                 { phase: 1, phaseTitle: "Fase 1: Salud Mental y Neurodiversidad", q: "¿Qué término describe los movimientos repetitivos que ayudan a autorregular el estrés y la sobrecarga sensorial?", opts: ["Stimming", "Kumpania", "Bullerengue", "Empatía"], correct: 0, exp: "El stimming es un mecanismo natural para regular el sistema nervioso." },
-                { phase: 1, phaseTitle: "Fase 1: Salud Mental y Neurodiversidad", q: "¿La neurodiversidad plantea que las diferencias cerebrales son variaciones humanas naturales?", opts: ["Verdadero", "Falso"], correct: 0, exp: "Entiende el cerebro desde la diversidad humana y aleja estigmas puramente clínicos." }
+                { phase: 1, phaseTitle: "Fase 1: Salud Mental y Neurodiversidad", q: "¿La neurodiversidad plantea que las diferencias cerebrales son variaciones humanas naturales?", opts: ["Verdadero", "Falso"], correct: 0, exp: "Entiende el cerebro desde la diversidad humana y aleja estigmas puramente clínicos." },
+                { phase: 1, phaseTitle: "Fase 1: Salud Mental y Neurodiversidad", q: "¿Qué estrategia favorece la inclusión educativa de personas neurodivergentes?", opts: ["Ajustes Razonables", "Estandarización Rigurosa", "Aislamiento", "Evaluación Única"], correct: 0, exp: "Los Ajustes Razonables garantizan la igualdad de oportunidades y accesibilidad." }
             ],
             phase2: [
                 { phase: 2, phaseTitle: "Fase 2: Geografía e Historia Étnica", q: "¿Cómo se llama la lengua ancestral del pueblo Rrom (Gitano) en Colombia?", opts: ["Wayuunaiki", "Romanane", "Namtrik", "Palenquero"], correct: 1, exp: "El Romanane guarda la memoria viva, oralidad e identidad del pueblo Rrom." },
-                { phase: 2, phaseTitle: "Fase 2: Geografía e Historia Étnica", q: "¿Cuál fue el primer pueblo libre de América fundado por comunidades cimarronas?", opts: ["San Basilio de Palenque", "Mompox", "Quibdó", "Riosucio"], correct: 0, exp: "San Basilio de Palenque es un baluarte histórico de libertad." }
+                { phase: 2, phaseTitle: "Fase 2: Geografía e Historia Étnica", q: "¿Cuál fue el primer pueblo libre de América fundado por comunidades cimarronas?", opts: ["San Basilio de Palenque", "Mompox", "Quibdó", "Riosucio"], correct: 0, exp: "San Basilio de Palenque es un baluarte histórico de libertad." },
+                { phase: 2, phaseTitle: "Fase 2: Geografía e Historia Étnica", q: "¿En qué región de Colombia habita mayoritariamente el pueblo indígena Wayuu?", opts: ["La Guajira", "Amazonas", "Chocó", "Nariño"], correct: 0, exp: "El pueblo Wayuu habita ancestralmente la península de La Guajira." }
             ],
             phase3: [
                 { phase: 3, phaseTitle: "Fase 3: Arte, Música y Saberes", q: "¿Qué instrumento del Pacífico es conocido como el 'piano de la selva'?", opts: ["Marimba de Chonta", "Tambor Alegre", "Guache", "Cununo"], correct: 0, exp: "La Marimba de Chonta es Patrimonio Inmaterial de la Humanidad." },
-                { phase: 3, phaseTitle: "Fase 3: Arte, Música y Saberes", q: "¿Qué ritmo ancestral del Caribe se baila tradicionalmente en círculo?", opts: ["Bullerengue", "Pasillo", "Bambuco", "Joropo"], correct: 0, exp: "El Bullerengue es un ritual de expresión oral y tejido social." }
+                { phase: 3, phaseTitle: "Fase 3: Arte, Música y Saberes", q: "¿Qué ritmo ancestral del Caribe se baila tradicionalmente en círculo?", opts: ["Bullerengue", "Pasillo", "Bambuco", "Joropo"], correct: 0, exp: "El Bullerengue es un ritual de expresión oral y tejido social." },
+                { phase: 3, phaseTitle: "Fase 3: Arte, Música y Saberes", q: "¿Qué elemento artesanal tradicional de la cultura Zenú es símbolo cultural de Colombia?", opts: ["Sombrero Vueltiao", "Mochila Arhuaca", "Chicha", "Ruana"], correct: 0, exp: "El Sombrero Vueltiao se elabora con la fibra de la caña flecha por el pueblo Zenú." },
+                { phase: 3, phaseTitle: "Fase 3: Arte, Música y Saberes", q: "¿Cómo se llama el arte de tejer mochilas tradicionales en la Sierra Nevada de Santa Marta?", opts: ["Tejido Arhuaco", "Mosaico", "Filigrana", "Talla en Madera"], correct: 0, exp: "El tejido de mochilas refleja la cosmovisión y pensamiento de los pueblos de la Sierra." }
             ]
         };
 
@@ -324,12 +307,22 @@
             questions: []
         };
 
+        // Algoritmo de mezcla aleatoria (Fisher-Yates Shuffle)
+        function shuffleArray(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // CORRECCIÓN: Generación de 9 preguntas verdaderamente aleatorias y sin repetición
         function generateMatchQuestions() {
-            return [
-                ...QUESTION_POOL.phase1.sort(() => 0.5 - Math.random()).slice(0, 3),
-                ...QUESTION_POOL.phase2.sort(() => 0.5 - Math.random()).slice(0, 3),
-                ...QUESTION_POOL.phase3.sort(() => 0.5 - Math.random()).slice(0, 3)
-            ];
+            const p1 = shuffleArray(QUESTION_POOL.phase1).slice(0, 3);
+            const p2 = shuffleArray(QUESTION_POOL.phase2).slice(0, 3);
+            const p3 = shuffleArray(QUESTION_POOL.phase3).slice(0, 3);
+            return [...p1, ...p2, ...p3];
         }
 
         function initFirebase() {
@@ -462,7 +455,7 @@
         }
 
         /* -------------------------------------------------------------
-         * CONTROL DE TEMPORIZADOR SINCRONIZADO (20 SEGUNDOS)
+         * CONTROL DE TEMPORIZADOR Y BLOQUEOS
          * ------------------------------------------------------------- */
         function startTimerSync() {
             clearInterval(timerInterval);
@@ -475,13 +468,11 @@
                 const elapsedSeconds = Math.floor((Date.now() - gameState.questionStartTime) / 1000);
                 const remaining = Math.max(0, 20 - elapsedSeconds);
 
-                // Actualizar textos del temporizador
                 const hostTimer = document.getElementById('hostTimerDisplay');
                 const playerTimer = document.getElementById('playerTimerDisplay');
                 if (hostTimer) hostTimer.textContent = `${remaining}s`;
                 if (playerTimer) playerTimer.textContent = `${remaining}s`;
 
-                // Evaluar si todos contestaron o si el tiempo llegó a 0
                 const playersList = Object.values(gameState.players || {});
                 const totalPlayers = playersList.length;
                 const answeredPlayers = playersList.filter(p => p.currentAnswer !== null).length;
@@ -489,7 +480,6 @@
                 const allAnswered = totalPlayers > 0 && answeredPlayers === totalPlayers;
                 const timeOut = remaining === 0;
 
-                // Habilitar botón del Anfitrión solo si se cumple una de las dos condiciones
                 if (isHost && !gameState.isRevealed) {
                     const btnAction = document.getElementById('btnHostMainAction');
                     const btnStatusText = document.getElementById('hostGameStateText');
@@ -503,7 +493,6 @@
                     }
                 }
 
-                // Si el tiempo llegó a 0 y el jugador no contestó, bloquear tablet
                 if (!isHost && timeOut && myPlayerId && gameState.players[myPlayerId]) {
                     if (gameState.players[myPlayerId].currentAnswer === null) {
                         showTimeOutOverlay();
@@ -645,10 +634,13 @@
             }
         }
 
+        // CORRECCIÓN: Bloqueo inmediato tras enviar la respuesta (Respuesta Única)
         async function submitPlayerAnswer(optIdx) {
             if (!myPlayerId || !gameState.players[myPlayerId]) return;
 
-            // Verificar que aún esté dentro de los 20s
+            const player = gameState.players[myPlayerId];
+            if (player.currentAnswer !== null) return; // Evitar cambios si ya respondió
+
             const elapsedSeconds = (Date.now() - gameState.questionStartTime) / 1000;
             if (elapsedSeconds > 20.5) {
                 showTimeOutOverlay();
@@ -741,6 +733,7 @@
             }
         }
 
+        // CORRECCIÓN: Notificación visual de Respuesta Correcta e Incorrecta en la Tablet
         function renderPlayerBoard() {
             const currentQ = gameState.questions[gameState.questionIndex];
             if (!currentQ || !myPlayerId || !gameState.players[myPlayerId]) return;
@@ -751,31 +744,61 @@
 
             const overlay = document.getElementById('playerSubmittedOverlay');
             const iconContainer = document.getElementById('overlayIconContainer');
+            const icon = document.getElementById('overlayIcon');
             const title = document.getElementById('overlayTitle');
             const sub = document.getElementById('overlaySub');
 
-            if (player.currentAnswer !== null) {
-                iconContainer.className = "w-16 h-16 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 rounded-full flex items-center justify-center mb-4 pulse-glow";
-                title.textContent = "¡Respuesta Registrada!";
-                sub.textContent = "Observa la pantalla principal para conocer los resultados y puntos por velocidad.";
-                overlay.classList.remove('hidden');
-            } else {
-                overlay.classList.add('hidden');
-            }
-
             const grid = document.getElementById('playerOptionsGrid');
             grid.innerHTML = '';
-            currentQ.opts.forEach((opt, idx) => {
-                const btn = document.createElement('button');
-                btn.onclick = () => submitPlayerAnswer(idx);
-                btn.className = "w-full p-4 rounded-2xl border border-slate-700 bg-slate-800 text-left font-bold text-slate-100 mb-2 hover:border-amber-500 transition-all";
-                btn.textContent = `${String.fromCharCode(65 + idx)}. ${opt}`;
-                grid.appendChild(btn);
-            });
+
+            // 1. Si la respuesta ya fue revelada por el anfitrión:
+            if (gameState.isRevealed) {
+                overlay.classList.remove('hidden');
+
+                if (player.currentAnswer === currentQ.correct) {
+                    iconContainer.className = "w-16 h-16 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 rounded-full flex items-center justify-center mb-4 pulse-glow";
+                    icon.setAttribute('data-lucide', 'check-circle-2');
+                    title.textContent = "¡Respuesta Correcta!";
+                    title.className = "text-2xl font-black text-emerald-400 mb-1";
+                    sub.textContent = "¡Excelente! Has sumado puntos al marcador de tu equipo.";
+                } else if (player.currentAnswer !== null) {
+                    iconContainer.className = "w-16 h-16 bg-rose-500/20 text-rose-400 border border-rose-500/40 rounded-full flex items-center justify-center mb-4 pulse-glow";
+                    icon.setAttribute('data-lucide', 'x-circle');
+                    title.textContent = "Respuesta Incorrecta";
+                    title.className = "text-2xl font-black text-rose-400 mb-1";
+                    sub.textContent = "No te preocupes, ¡atento a la siguiente pregunta para recuperarte!";
+                } else {
+                    iconContainer.className = "w-16 h-16 bg-amber-500/20 text-amber-400 border border-amber-500/40 rounded-full flex items-center justify-center mb-4 pulse-glow";
+                    icon.setAttribute('data-lucide', 'alert-circle');
+                    title.textContent = "Sin Respuesta";
+                    title.className = "text-2xl font-black text-amber-400 mb-1";
+                    sub.textContent = "Se agotó el tiempo de respuesta para esta pregunta.";
+                }
+            } 
+            // 2. Si el jugador ya respondió pero la respuesta no ha sido revelada:
+            else if (player.currentAnswer !== null) {
+                overlay.classList.remove('hidden');
+                iconContainer.className = "w-16 h-16 bg-indigo-500/20 text-indigo-400 border border-indigo-500/40 rounded-full flex items-center justify-center mb-4 pulse-glow";
+                icon.setAttribute('data-lucide', 'clock');
+                title.textContent = "¡Respuesta Registrada!";
+                title.className = "text-2xl font-black text-slate-100 mb-1";
+                sub.textContent = "Esperando que el anfitrión revele la respuesta correcta...";
+            } 
+            // 3. Si aún no ha respondido y la pregunta está activa:
+            else {
+                overlay.classList.add('hidden');
+                currentQ.opts.forEach((opt, idx) => {
+                    const btn = document.createElement('button');
+                    btn.onclick = () => submitPlayerAnswer(idx);
+                    btn.className = "w-full p-4 rounded-2xl border border-slate-700 bg-slate-800 text-left font-bold text-slate-100 mb-2 hover:border-amber-500 transition-all active:scale-95";
+                    btn.textContent = `${String.fromCharCode(65 + idx)}. ${opt}`;
+                    grid.appendChild(btn);
+                });
+            }
         }
 
         /* -------------------------------------------------------------
-         * PANTALLA DE VICTORIA Y ANIMACIÓN DE CONFETI / ESTRELLAS
+         * PANTALLA DE VICTORIA Y ANIMACIÓN DE CONFETI
          * ------------------------------------------------------------- */
         function renderVictoryScreen() {
             document.getElementById('victoryView').classList.remove('hidden');
