@@ -64,8 +64,8 @@
             <p class="text-slate-400 max-w-md mb-8 text-sm">Selecciona cómo deseas ingresar a la partida:</p>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-xl w-full">
-                <!-- Host Option -->
-                <button onclick="setupHostRoom()" class="bg-slate-900 border-2 border-slate-800 hover:border-amber-500 p-6 rounded-3xl transition-all flex flex-col items-center text-center group">
+                <!-- Host Option (Visibilidad controlada si ingresa por QR) -->
+                <button id="btnOptionHost" onclick="setupHostRoom()" class="bg-slate-900 border-2 border-slate-800 hover:border-amber-500 p-6 rounded-3xl transition-all flex flex-col items-center text-center group">
                     <div class="w-16 h-16 bg-amber-500/10 text-amber-400 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                         <i data-lucide="tv" class="w-8 h-8"></i>
                     </div>
@@ -74,7 +74,7 @@
                 </button>
 
                 <!-- Player Option -->
-                <div class="bg-slate-900 border-2 border-slate-800 p-6 rounded-3xl flex flex-col items-center text-center">
+                <div id="cardOptionPlayer" class="bg-slate-900 border-2 border-slate-800 p-6 rounded-3xl flex flex-col items-center text-center">
                     <div class="w-16 h-16 bg-indigo-500/10 text-indigo-400 rounded-2xl flex items-center justify-center mb-4">
                         <i data-lucide="tablet" class="w-8 h-8"></i>
                     </div>
@@ -306,7 +306,7 @@
         let isHost = false;
 
         let gameState = {
-            status: "LOBBY", // LOBBY, PLAYING, FINISHED
+            status: "LOBBY", // LOBBY, PLAYING, FINISHED, CLOSED
             questionIndex: 0,
             questionStartTime: null,
             isRevealed: false,
@@ -339,6 +339,7 @@
                 isHost = true;
                 currentRoomId = Math.floor(1000 + Math.random() * 9000).toString();
                 gameState.questions = generateMatchQuestions();
+                gameState.status = "LOBBY";
 
                 hideAllViews();
                 document.getElementById('hostLobbyView').classList.remove('hidden');
@@ -390,8 +391,13 @@
 
                 if (roomSnap.exists()) {
                     const data = roomSnap.data();
-                    const playerCount = Object.keys(data.players || {}).length;
 
+                    if (data.status === "CLOSED") {
+                        alert("La sala ha sido cerrada por el anfitrión.");
+                        return;
+                    }
+
+                    const playerCount = Object.keys(data.players || {}).length;
                     if (playerCount >= 5) {
                         alert("La sala está llena (máximo 5 jugadores)");
                         return;
@@ -401,7 +407,7 @@
                     await window.FB.updateDoc(roomRef, { players: data.players });
                     listenToRoomUpdates();
                 } else {
-                    alert("La sala no existe.");
+                    alert("La sala ingresada no existe.");
                     return;
                 }
             }
@@ -416,9 +422,25 @@
             window.FB.onSnapshot(roomRef, (snapshot) => {
                 if (snapshot.exists()) {
                     gameState = snapshot.data();
+
+                    // MEJORA 1: Expulsar automáticamente a los jugadores si la sala se cierra
+                    if (gameState.status === "CLOSED" && !isHost) {
+                        alert("El anfitrión ha cerrado la sala.");
+                        resetPlayerToHome();
+                        return;
+                    }
+
                     renderApp();
                 }
             });
+        }
+
+        function resetPlayerToHome() {
+            myPlayerId = null;
+            currentRoomId = null;
+            roomRef = null;
+            hideAllViews();
+            document.getElementById('roleSelectionView').classList.remove('hidden');
         }
 
         function hideAllViews() {
@@ -448,7 +470,6 @@
             } else {
                 document.getElementById('playerView').classList.remove('hidden');
                 
-                // Mostrar vista de espera o vista de preguntas según el estado de la sala
                 if (gameState.status === "LOBBY") {
                     document.getElementById('playerLobbyWaiting').classList.remove('hidden');
                     document.getElementById('playerGameContent').classList.add('hidden');
@@ -521,7 +542,6 @@
                 grid.innerHTML += `<div class="p-4 rounded-2xl border text-sm ${style}">${String.fromCharCode(65 + idx)}. ${opt}</div>`;
             });
 
-            // Actualizar estado visual del Botón Único Dinámico
             const btnAction = document.getElementById('btnHostMainAction');
             const btnText = document.getElementById('btnHostActionText');
 
@@ -539,7 +559,6 @@
             }
         }
 
-        // Manejador central del Botón Único del Anfitrión
         async function handleHostMainAction() {
             if (!gameState.isRevealed) {
                 await revealAnswer();
@@ -605,14 +624,12 @@
                 if (db) await window.FB.updateDoc(roomRef, gameState);
                 else renderApp();
             } else {
-                // Comprobar si existe un empate en el 1er lugar antes de finalizar
                 const sorted = Object.values(gameState.players || {}).sort((a, b) => b.score - a.score);
                 const hasTie = sorted.length >= 2 && sorted[0].score > 0 && sorted[0].score === sorted[1].score;
 
                 if (hasTie) {
                     alert("¡Empate detectado en el primer lugar! Se agregará una pregunta extra de desempate.");
                     
-                    // Añadir una pregunta aleatoria extra de la Fase 3
                     const tieBreakerQ = QUESTION_POOL.phase3[Math.floor(Math.random() * QUESTION_POOL.phase3.length)];
                     gameState.questions.push({
                         ...tieBreakerQ,
@@ -632,7 +649,6 @@
                     else renderApp();
 
                 } else {
-                    // Finalizar juego si no hay empate
                     gameState.status = "FINISHED";
                     if (db) await window.FB.updateDoc(roomRef, { status: "FINISHED" });
                     else renderApp();
@@ -730,19 +746,29 @@
             else renderApp();
         }
 
-        function createNewRoom() {
+        // MEJORA 2: Función de Cierre de Sala para el Anfitrión (Notifica y expulsa a las tablets)
+        async function createNewRoom() {
+            if (db && roomRef) {
+                await window.FB.updateDoc(roomRef, { status: "CLOSED" });
+            }
             isHost = false;
             currentRoomId = null;
             roomRef = null;
             hideAllViews();
             document.getElementById('roleSelectionView').classList.remove('hidden');
+            document.getElementById('btnOptionHost').classList.remove('hidden');
         }
 
+        // MEJORA 3: Restricción de Roles en la carga inicial
         window.onload = function() {
             initFirebase();
             const urlParams = new URLSearchParams(window.location.search);
             const roomFromUrl = urlParams.get('room');
+
+            // Si ingresa escaneando un QR (con parámetro room), ocultar opción de crear sala
             if (roomFromUrl) {
+                document.getElementById('btnOptionHost').classList.add('hidden');
+                document.getElementById('cardOptionPlayer').classList.add('col-span-2');
                 document.getElementById('inputRoomCode').value = roomFromUrl;
             }
         };
