@@ -10,6 +10,8 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- QR Code Generator Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Canvas Confetti Library para animación de celebración -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
     <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -24,8 +26,8 @@
         .elevator-car { transition: bottom 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); }
         .pulse-glow { animation: pulseGlow 2s infinite; }
         @keyframes pulseGlow {
-            0%, 100% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.4); }
-            50% { box-shadow: 0 0 30px rgba(245, 158, 11, 0.8); }
+            0%, 100% { box-shadow: 0 0 20px rgba(245, 158, 11, 0.5); }
+            50% { box-shadow: 0 0 40px rgba(245, 158, 11, 0.9); }
         }
     </style>
 </head>
@@ -135,11 +137,6 @@
                 <div id="elevatorShaft" class="flex-1 min-h-[380px] elevator-shaft rounded-2xl relative border border-slate-800 p-3 flex justify-around items-stretch">
                     <!-- Dynamic Lanes for Players -->
                 </div>
-
-                <!-- Status Badges Container -->
-                <div id="hostStatusBadges" class="mt-4 pt-3 border-t border-slate-800 grid grid-cols-2 sm:grid-cols-3 gap-2 text-center text-xs">
-                    <!-- Dynamic status badges -->
-                </div>
             </div>
 
             <!-- Right: Questions and Controls -->
@@ -220,6 +217,48 @@
             </div>
         </section>
 
+        <!-- VICTORY / END OF GAME VIEW (SHARED BY TV AND TABLETS) -->
+        <section id="victoryView" class="hidden flex-1 flex flex-col items-center justify-center text-center p-4">
+            <div class="bg-slate-900 border border-amber-500/40 rounded-3xl p-8 max-w-xl w-full shadow-2xl relative overflow-hidden">
+                
+                <!-- Trofeo Interactivo con Lanzador de Confeti -->
+                <div onclick="launchConfetti()" title="¡Haz clic sobre el trofeo para lanzar destellos!" class="w-28 h-28 bg-gradient-to-tr from-amber-400 via-orange-500 to-amber-300 text-slate-950 border-4 border-amber-200 rounded-full flex items-center justify-center mx-auto mb-4 pulse-glow shadow-2xl cursor-pointer hover:scale-110 active:scale-95 transition-all">
+                    <i data-lucide="trophy" class="w-14 h-14 stroke-[2.5]"></i>
+                </div>
+
+                <!-- Mensaje Institucional Personalizado -->
+                <p class="text-xs font-extrabold uppercase tracking-widest text-amber-400 mb-2 leading-relaxed px-4">
+                    El proyecto Tejiendo Saberes y El Grupo Shiatuwakuipa, Premia tus Conocimientos
+                </p>
+
+                <h2 id="winnerTitle" class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-orange-400 to-amber-200 mb-2">
+                    ¡Equipo Ganador!
+                </h2>
+                <p id="winnerSubtitle" class="text-xs text-slate-300 font-semibold mb-6">Acreditado con el Máximo Reconocimiento Étnico e Inclusivo</p>
+
+                <!-- Final Leaderboard List -->
+                <div id="finalLeaderboard" class="space-y-3 mb-8 text-left">
+                    <!-- Dynamic Final Scores -->
+                </div>
+
+                <!-- Host Controls (Only Visible on TV) -->
+                <div id="hostVictoryControls" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button onclick="restartMatch()" class="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-slate-950 font-extrabold py-3.5 rounded-2xl shadow-xl transition-all active:scale-95 text-xs flex items-center justify-center gap-2">
+                        <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                        <span>Revancha (Mismos Jugadores)</span>
+                    </button>
+                    <button onclick="createNewRoom()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-extrabold py-3.5 rounded-2xl transition-all active:scale-95 text-xs flex items-center justify-center gap-2">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                        <span>Crear Nueva Sala</span>
+                    </button>
+                </div>
+
+                <div id="playerVictoryMessage" class="hidden text-xs text-slate-400 font-medium">
+                    Esperando que el Anfitrión decida si jugamos la revancha...
+                </div>
+            </div>
+        </section>
+
     </main>
 
     <script>
@@ -242,7 +281,7 @@
             ]
         };
 
-        // Configuración real vinculada a tu proyecto de Firebase
+        // Configuración real de Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyBhO4qxym0Wh5uxngU2riWgKOInUdMqU8c",
             authDomain: "trivia-neuroetnica.firebaseapp.com",
@@ -264,11 +303,10 @@
             questionIndex: 0,
             questionStartTime: null,
             isRevealed: false,
-            players: {}, // { playerId: { name, score, currentAnswer, answerTime } }
+            players: {},
             questions: []
         };
 
-        // Generar preguntas aleatorias para la partida
         function generateMatchQuestions() {
             return [
                 ...QUESTION_POOL.phase1.sort(() => 0.5 - Math.random()).slice(0, 3),
@@ -277,23 +315,17 @@
             ];
         }
 
-        /* -------------------------------------------------------------
-         * INICIALIZACIÓN DE SALAS Y CONEXIÓN CON FIREBASE
-         * ------------------------------------------------------------- */
         function initFirebase() {
             if (window.FB && !db) {
                 try {
                     const app = window.FB.initializeApp(firebaseConfig);
                     db = window.FB.getFirestore(app);
                 } catch (e) {
-                    console.log("Firebase ya estaba inicializado o falló conexión:", e);
+                    console.log("Firebase inicializado previamente:", e);
                 }
             }
         }
 
-        /* -------------------------------------------------------------
-         * CREACIÓN DE SALA Y CÓDIGO QR
-         * ------------------------------------------------------------- */
         async function setupHostRoom() {
             try {
                 initFirebase();
@@ -301,7 +333,7 @@
                 currentRoomId = Math.floor(1000 + Math.random() * 9000).toString();
                 gameState.questions = generateMatchQuestions();
 
-                document.getElementById('roleSelectionView').classList.add('hidden');
+                hideAllViews();
                 document.getElementById('hostLobbyView').classList.remove('hidden');
                 document.getElementById('lobbyRoomCode').textContent = currentRoomId;
 
@@ -312,11 +344,7 @@
                 qrContainer.innerHTML = "";
 
                 if (typeof QRCode !== 'undefined') {
-                    new QRCode(qrContainer, {
-                        text: joinUrl,
-                        width: 180,
-                        height: 180
-                    });
+                    new QRCode(qrContainer, { text: joinUrl, width: 180, height: 180 });
                 } else {
                     qrContainer.innerHTML = `<p class="text-xs text-red-500 font-bold p-2">Código manual: ${currentRoomId}</p>`;
                 }
@@ -332,8 +360,7 @@
                 if (window.lucide) lucide.createIcons();
 
             } catch (error) {
-                console.error("Error al crear la sala:", error);
-                alert("Ocurrió un inconveniente al crear la sala. Revisa la consola para más detalles.");
+                console.error("Error al crear sala:", error);
             }
         }
 
@@ -343,7 +370,7 @@
             const roomCode = document.getElementById('inputRoomCode').value.trim();
 
             if (!name || !roomCode) {
-                alert("Por favor ingresa tu nombre y el código de sala");
+                alert("Ingresa tu nombre y el código de sala");
                 return;
             }
 
@@ -363,22 +390,16 @@
                         return;
                     }
 
-                    data.players[myPlayerId] = {
-                        name: name,
-                        score: 0,
-                        currentAnswer: null,
-                        answerTime: null
-                    };
-
+                    data.players[myPlayerId] = { name: name, score: 0, currentAnswer: null, answerTime: null };
                     await window.FB.updateDoc(roomRef, { players: data.players });
                     listenToRoomUpdates();
                 } else {
-                    alert("La sala ingresada no existe.");
+                    alert("La sala no existe.");
                     return;
                 }
             }
 
-            document.getElementById('roleSelectionView').classList.add('hidden');
+            hideAllViews();
             document.getElementById('playerView').classList.remove('hidden');
             document.getElementById('playerNameTitle').textContent = name;
         }
@@ -393,19 +414,32 @@
             });
         }
 
+        function hideAllViews() {
+            document.getElementById('roleSelectionView').classList.add('hidden');
+            document.getElementById('hostLobbyView').classList.add('hidden');
+            document.getElementById('hostView').classList.add('hidden');
+            document.getElementById('playerView').classList.add('hidden');
+            document.getElementById('victoryView').classList.add('hidden');
+        }
+
         /* -------------------------------------------------------------
-         * RENDERIZADO Y CONTROL DE LÓGICA
+         * CONTROL DE VISTAS Y ESTADOS DE JUEGO
          * ------------------------------------------------------------- */
         function renderApp() {
-            if (isHost) {
+            hideAllViews();
+
+            if (gameState.status === "FINISHED") {
+                renderVictoryScreen();
+            } else if (isHost) {
                 if (gameState.status === "LOBBY") {
+                    document.getElementById('hostLobbyView').classList.remove('hidden');
                     renderHostLobby();
                 } else {
-                    document.getElementById('hostLobbyView').classList.add('hidden');
                     document.getElementById('hostView').classList.remove('hidden');
                     renderHostBoard();
                 }
             } else {
+                document.getElementById('playerView').classList.remove('hidden');
                 renderPlayerBoard();
             }
             if (window.lucide) lucide.createIcons();
@@ -413,18 +447,15 @@
 
         function renderHostLobby() {
             const players = Object.values(gameState.players || {});
-            const container = document.getElementById('playersListContainer');
-            const countDisplay = document.getElementById('connectedCount');
-            const btnStart = document.getElementById('btnStartMatch');
-
-            countDisplay.textContent = players.length;
-            container.innerHTML = players.map(p => `
+            document.getElementById('connectedCount').textContent = players.length;
+            
+            document.getElementById('playersListContainer').innerHTML = players.map(p => `
                 <span class="bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5">
                     <span class="w-2 h-2 rounded-full bg-indigo-400 animate-pulse"></span> ${p.name}
                 </span>
             `).join('');
 
-            btnStart.disabled = !(players.length >= 2 && players.length <= 5);
+            document.getElementById('btnStartMatch').disabled = !(players.length >= 2 && players.length <= 5);
         }
 
         async function startMatch() {
@@ -433,11 +464,8 @@
             gameState.questionStartTime = Date.now();
             gameState.isRevealed = false;
 
-            if (db) {
-                await window.FB.updateDoc(roomRef, gameState);
-            } else {
-                renderApp();
-            }
+            if (db) await window.FB.updateDoc(roomRef, gameState);
+            else renderApp();
         }
 
         function renderHostBoard() {
@@ -455,16 +483,15 @@
                 const maxPts = 2250;
                 const pct = Math.min(100, (p.score / maxPts) * 100);
 
-                const lane = document.createElement('div');
-                lane.className = "relative w-1/5 flex justify-center items-end py-2";
-                lane.innerHTML = `
-                    <div class="w-1 bg-slate-800 h-full absolute rounded-full"></div>
-                    <div class="elevator-car absolute bottom-[${pct}%] w-full max-w-[80px] bg-amber-600/90 border-2 border-amber-400 rounded-2xl p-2 flex flex-col items-center justify-center text-center shadow-lg">
-                        <span class="text-[10px] font-black text-white truncate w-full">${p.name}</span>
-                        <span class="text-xs font-extrabold text-amber-300">${p.score}</span>
+                shaft.innerHTML += `
+                    <div class="relative w-1/5 flex justify-center items-end py-2">
+                        <div class="w-1 bg-slate-800 h-full absolute rounded-full"></div>
+                        <div class="elevator-car absolute bottom-[${pct}%] w-full max-w-[80px] bg-amber-600/90 border-2 border-amber-400 rounded-2xl p-2 flex flex-col items-center justify-center text-center shadow-lg">
+                            <span class="text-[10px] font-black text-white truncate w-full">${p.name}</span>
+                            <span class="text-xs font-extrabold text-amber-300">${p.score}</span>
+                        </div>
                     </div>
                 `;
-                shaft.appendChild(lane);
             });
 
             const grid = document.getElementById('hostOptionsGrid');
@@ -478,12 +505,16 @@
                 grid.innerHTML += `<div class="p-4 rounded-2xl border text-sm ${style}">${String.fromCharCode(65 + idx)}. ${opt}</div>`;
             });
 
-            const expBox = document.getElementById('explanationBox');
-            if (gameState.isRevealed) {
-                expBox.classList.remove('hidden');
-                document.getElementById('explanationText').textContent = currentQ.exp;
+            const btnNext = document.getElementById('btnNext');
+            if (gameState.questionIndex === gameState.questions.length - 1 && gameState.isRevealed) {
+                btnNext.textContent = "Ver Resultados Finales";
             } else {
-                expBox.classList.add('hidden');
+                btnNext.textContent = "Siguiente Pregunta";
+            }
+
+            document.getElementById('explanationBox').classList.toggle('hidden', !gameState.isRevealed);
+            if (gameState.isRevealed) {
+                document.getElementById('explanationText').textContent = currentQ.exp;
             }
         }
 
@@ -494,11 +525,8 @@
             gameState.players[myPlayerId].currentAnswer = optIdx;
             gameState.players[myPlayerId].answerTime = responseMs;
 
-            if (db) {
-                await window.FB.updateDoc(roomRef, { players: gameState.players });
-            } else {
-                renderApp();
-            }
+            if (db) await window.FB.updateDoc(roomRef, { players: gameState.players });
+            else renderApp();
         }
 
         async function revealAnswer() {
@@ -530,9 +558,7 @@
                     isRevealed: true,
                     players: gameState.players
                 });
-            } else {
-                renderApp();
-            }
+            } else renderApp();
         }
 
         async function nextQuestion() {
@@ -546,26 +572,24 @@
                     p.answerTime = null;
                 });
 
-                if (db) {
-                    await window.FB.updateDoc(roomRef, gameState);
-                } else {
-                    renderApp();
-                }
+                if (db) await window.FB.updateDoc(roomRef, gameState);
+                else renderApp();
+            } else {
+                gameState.status = "FINISHED";
+                if (db) await window.FB.updateDoc(roomRef, { status: "FINISHED" });
+                else renderApp();
             }
         }
 
         function renderPlayerBoard() {
             const currentQ = gameState.questions[gameState.questionIndex];
-            if (!currentQ || !myPlayerId) return;
+            if (!currentQ || !myPlayerId || !gameState.players[myPlayerId]) return;
 
             const player = gameState.players[myPlayerId];
-            if (!player) return;
-
             document.getElementById('playerScoreDisplay').textContent = player.score;
             document.getElementById('playerQuestionText').textContent = currentQ.q;
 
-            const hasAnswered = player.currentAnswer !== null;
-            document.getElementById('playerSubmittedOverlay').classList.toggle('hidden', !hasAnswered);
+            document.getElementById('playerSubmittedOverlay').classList.toggle('hidden', player.currentAnswer === null);
 
             const grid = document.getElementById('playerOptionsGrid');
             grid.innerHTML = '';
@@ -576,6 +600,87 @@
                 btn.textContent = `${String.fromCharCode(65 + idx)}. ${opt}`;
                 grid.appendChild(btn);
             });
+        }
+
+        /* -------------------------------------------------------------
+         * PANTALLA DE VICTORIA Y ANIMACIÓN DE CONFETI / ESTRELLAS
+         * ------------------------------------------------------------- */
+        function renderVictoryScreen() {
+            document.getElementById('victoryView').classList.remove('hidden');
+
+            const sortedPlayers = Object.values(gameState.players || {}).sort((a, b) => b.score - a.score);
+            const winner = sortedPlayers[0] || { name: "Nadie", score: 0 };
+
+            document.getElementById('winnerTitle').textContent = `¡${winner.name} es el Ganador!`;
+
+            const listContainer = document.getElementById('finalLeaderboard');
+            listContainer.innerHTML = sortedPlayers.map((p, index) => `
+                <div class="p-4 rounded-2xl border ${index === 0 ? 'bg-amber-500/10 border-amber-500/50 ring-2 ring-amber-500/30' : 'bg-slate-800/80 border-slate-700'} flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-xl ${index === 0 ? 'bg-amber-500 text-slate-950 font-black' : 'bg-slate-700 text-slate-300 font-bold'} flex items-center justify-center text-xs">
+                            ${index + 1}°
+                        </span>
+                        <span class="font-bold text-sm text-slate-100">${p.name}</span>
+                    </div>
+                    <span class="font-extrabold text-amber-400 text-sm">${p.score} pts</span>
+                </div>
+            `).join('');
+
+            if (isHost) {
+                document.getElementById('hostVictoryControls').classList.remove('hidden');
+                document.getElementById('playerVictoryMessage').classList.add('hidden');
+            } else {
+                document.getElementById('hostVictoryControls').classList.add('hidden');
+                document.getElementById('playerVictoryMessage').classList.remove('hidden');
+            }
+
+            // Disparar animación de confeti automática
+            launchConfetti();
+        }
+
+        // Función para disparar ráfagas de confeti y estrellas
+        function launchConfetti() {
+            if (typeof confetti !== 'undefined') {
+                // Ráfaga 1: Izquierda
+                confetti({
+                    particleCount: 80,
+                    spread: 70,
+                    origin: { y: 0.6, x: 0.2 },
+                    colors: ['#f59e0b', '#d97706', '#10b981', '#6366f1']
+                });
+                // Ráfaga 2: Derecha
+                confetti({
+                    particleCount: 80,
+                    spread: 70,
+                    origin: { y: 0.6, x: 0.8 },
+                    colors: ['#f59e0b', '#d97706', '#10b981', '#6366f1']
+                });
+            }
+        }
+
+        async function restartMatch() {
+            gameState.status = "PLAYING";
+            gameState.questionIndex = 0;
+            gameState.isRevealed = false;
+            gameState.questionStartTime = Date.now();
+            gameState.questions = generateMatchQuestions();
+
+            Object.values(gameState.players).forEach(p => {
+                p.score = 0;
+                p.currentAnswer = null;
+                p.answerTime = null;
+            });
+
+            if (db) await window.FB.updateDoc(roomRef, gameState);
+            else renderApp();
+        }
+
+        function createNewRoom() {
+            isHost = false;
+            currentRoomId = null;
+            roomRef = null;
+            hideAllViews();
+            document.getElementById('roleSelectionView').classList.remove('hidden');
         }
 
         window.onload = function() {
