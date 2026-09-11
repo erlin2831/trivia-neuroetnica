@@ -287,32 +287,56 @@
             }
         }
 
+                /* -------------------------------------------------------------
+         * FUNCIÓN ACTUALIZADA: CREACIÓN SEGURA DE SALA Y QR
+         * ------------------------------------------------------------- */
         async function setupHostRoom() {
-            isHost = true;
-            currentRoomId = Math.floor(1000 + Math.random() * 9000).toString();
-            gameState.questions = generateMatchQuestions();
-
-            document.getElementById('roleSelectionView').classList.add('hidden');
-            document.getElementById('hostLobbyView').classList.remove('hidden');
-            document.getElementById('lobbyRoomCode').textContent = currentRoomId;
-
-            // Generar Código QR con la URL actual + parámetro de sala
-            const currentUrl = window.location.href.split('?')[0];
-            const joinUrl = `${currentUrl}?room=${currentRoomId}`;
-            
-            document.getElementById('qrcode').innerHTML = "";
-            new QRCode(document.getElementById('qrcode'), {
-                text: joinUrl,
-                width: 180,
-                height: 180
-            });
-
-            if (db) {
-                roomRef = window.FB.doc(db, "rooms", currentRoomId);
-                await window.FB.setDoc(roomRef, gameState);
-                listenToRoomUpdates();
-            } else {
-                renderHostLobby();
+            try {
+                isHost = true;
+                // 1. Generar código aleatorio de sala (4 dígitos)
+                currentRoomId = Math.floor(1000 + Math.random() * 9000).toString();
+                gameState.questions = generateMatchQuestions();
+        
+                // 2. Cambiar inmediatamente las vistas para mostrar la pantalla de la sala
+                document.getElementById('roleSelectionView').classList.add('hidden');
+                document.getElementById('hostLobbyView').classList.remove('hidden');
+                document.getElementById('lobbyRoomCode').textContent = currentRoomId;
+        
+                // 3. Generar la URL para que las tablets se unan mediante el QR
+                const currentUrl = window.location.href.split('?')[0];
+                const joinUrl = `${currentUrl}?room=${currentRoomId}`;
+                
+                // 4. Limpiar el contenedor e intentar generar el Código QR
+                const qrContainer = document.getElementById('qrcode');
+                qrContainer.innerHTML = "";
+        
+                if (typeof QRCode !== 'undefined') {
+                    new QRCode(qrContainer, {
+                        text: joinUrl,
+                        width: 180,
+                        height: 180
+                    });
+                } else {
+                    // Mensaje alternativo si la librería QR no terminó de cargar
+                    qrContainer.innerHTML = `<p class="text-xs text-red-500 font-bold p-2">Usa el código manual: ${currentRoomId}</p>`;
+                }
+        
+                // 5. Intentar guardar y escuchar en Firebase de forma segura
+                if (db && window.FB) {
+                    roomRef = window.FB.doc(db, "rooms", currentRoomId);
+                    await window.FB.setDoc(roomRef, gameState);
+                    listenToRoomUpdates();
+                } else {
+                    // Si Firebase aún no se ha configurado, mostramos el lobby localmente
+                    renderHostLobby();
+                }
+        
+                // 6. Actualizar iconos vectoriales
+                if (window.lucide) lucide.createIcons();
+        
+            } catch (error) {
+                console.error("Error al crear la sala:", error);
+                alert("Ocurrió un inconveniente al crear la sala. Revisa la consola para más detalles.");
             }
         }
 
